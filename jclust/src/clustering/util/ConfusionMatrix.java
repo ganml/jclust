@@ -1,7 +1,6 @@
 package clustering.util;
 
 import java.util.*;
-
 import clustering.dataset.NominalVariable;
 
 public class ConfusionMatrix {
