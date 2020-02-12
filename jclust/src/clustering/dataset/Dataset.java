@@ -39,7 +39,7 @@ public class Dataset {
 		}
 		
 		for(int k=0; k<schema.size(); ++k) {
-			if(schema.getVariable(k).getType() == VariableType.Nomial) {
+			if(schema.getVariable(k).getType() == VariableType.Nominal) {
 				std[k] = 1.0;
 			} else {
 				double m1 = records.get(0).get(k);
@@ -80,7 +80,7 @@ public class Dataset {
 		}
 		
 		for(int i=0; i<schema.size(); ++i) {
-			if(schema.getVariable(i).getType() == VariableType.Nomial) {
+			if(schema.getVariable(i).getType() == VariableType.Nominal) {
 				continue;
 			}
 			
@@ -116,7 +116,7 @@ public class Dataset {
 		sb.append(System.getProperty("line.separator"));
 		for(int i=0; i<schema.size(); ++i) {
 			sb.append(schema.getVariable(i).getName()).append(",");
-			if(schema.getVariable(i).getType() == VariableType.Nomial) {
+			if(schema.getVariable(i).getType() == VariableType.Nominal) {
 				sb.append("discrete");
 			} else {
 				sb.append("continuous");

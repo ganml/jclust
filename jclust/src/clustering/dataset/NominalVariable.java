@@ -7,7 +7,7 @@ public class NominalVariable extends Variable {
 	private List<Integer> values;
 	
 	public NominalVariable(String name) {
-		super(name, VariableType.Nomial);
+		super(name, VariableType.Nominal);
 		valueMap = new HashMap<String, Integer>();
 		values = new ArrayList<Integer>();
 	}

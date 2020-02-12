@@ -135,7 +135,7 @@ public class DatasetReader {
 			
 			
 			for(int i=0; i<schema.size(); ++i) {
-				if(schema.getVariable(i).getType() == VariableType.Nomial) {
+				if(schema.getVariable(i).getType() == VariableType.Nominal) {
 					NominalVariable v = (NominalVariable) schema.getVariable(i);
 					record.set(i, v.getValue(cell[columnIndex.get(i)]));
 				}
