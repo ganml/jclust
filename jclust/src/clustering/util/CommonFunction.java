@@ -33,7 +33,7 @@ public class CommonFunction {
 			v[i] /= sum;			
 		}
 	}
-
+	
 	public static void log(String message, double[][] m) {
 		Logger logger = LogManager.getRootLogger();
 		String newline = System.getProperty("line.separator");

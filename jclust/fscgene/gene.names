@@ -1,0 +1,20 @@
+gene
+///: schema
+Gene,recordid
+zero,continuous
+ten,continuous 
+twenty,continuous
+thirty,continuous
+fourty,continuous
+fifty,continuous
+sixty,continuous
+seventy,continuous
+eighty,continuous
+ninety,continuous
+hundred,continuous
+one-ten,continuous
+one-twenty,continuous
+one-thirty,continuous
+one-fourty,continuous
+one-fifty,continuous
+one-sixty,continuous

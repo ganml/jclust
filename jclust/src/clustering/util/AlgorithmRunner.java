@@ -109,7 +109,7 @@ public class AlgorithmRunner {
     			DatasetReader dr = new DatasetReader(fDataFile.getPath(), fSchemafile.getPath());
     			dr.read();
     			if(normalize.toLowerCase().equals("yes")) {
-    				System.out.println("normalizing dataset ...");
+    				CommonFunction.log("normalizing dataset ...");
     				dr.getDataset().normalizeZscore();
     			}
     			Dataset ds = dr.getDataset();

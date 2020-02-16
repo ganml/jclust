@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <File name="LogToFile" fileName="jclust.log">
+            <PatternLayout>
+                <Pattern>%d [%t] %-5p %C{6} (%F:%L) - %m%n</Pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Logger name="clustering" level="debug" additivity="false">
+            <AppenderRef ref="LogToFile"/>
+        </Logger>
+        <Root level="error">
+            <AppenderRef ref="LogToFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

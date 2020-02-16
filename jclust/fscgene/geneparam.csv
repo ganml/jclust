@@ -1,0 +1,2 @@
+RunIndex,Algorithm,DataFolder,DataFile,SchemaFile,Normalize,NumRun,seed,alpha,delta,epsilon,numcluster,maxiter,im
+1,Fsc,.,gene.csv,gene.names,yes,10,1,2.1,1.00E-06,0,10,100,RandomMethod

@@ -20,7 +20,8 @@ public class AlgorithmRunnerMain {
 			CommandLine cmd = parser.parse( options, args);
 			if(cmd.hasOption("help")) {
 				HelpFormatter formatter = new HelpFormatter();
-				formatter.printHelp( "AfgkmeanMT", options );
+				formatter.printHelp( "jclust", options );
+				return;
 			}
 			
 			String paramfile = "";
