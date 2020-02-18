@@ -1,4 +1,4 @@
-setwd("~/software/jclust/trunk/jclust/tfcmva")
+setwd("~/Software/jclust/trunk/jclust/tfcmva")
 inforce <- read.csv(unzip("inforce.zip", "inforce.csv"))
 inforce$age <- (inforce$currentDate- inforce$birthDate)/365
 inforce$ttm <- (inforce$matDate- inforce$currentDate)/365
