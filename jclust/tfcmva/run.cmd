@@ -6,8 +6,6 @@ set CLASSPATH=%CLASSPATH%;../lib/commons-math3-3.6.1.jar
 set CLASSPATH=%CLASSPATH%;../lib/log4j-api-2.3.jar
 set CLASSPATH=%CLASSPATH%;../lib/log4j-core-2.3.jar
 
-java clustering.main.AlgorithmRunnerMain -help
-
-REM paramfile geneparam.csv -numthread 2 -prefix gene -vindex RunTime:ObjectiveFunctionValue:WithinClusterSS
+java clustering.main.AlgorithmRunnerMain -paramfile vaparam.csv -numthread 2 -prefix va -vindex RunTime:ObjectiveFunctionValue:WithinClusterSS
 
 pause
