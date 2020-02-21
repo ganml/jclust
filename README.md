@@ -1,8 +1,7 @@
 # jclust
-A light weight Java framework for data clustering
+A lightweight Java framework for data clustering
 
 If you write research articles and want to cite this software, please use the following citation:
-
 ```
 @Book{gan2020,
   title     = {Data Clustering: Theory, Algorithms and Applications},
