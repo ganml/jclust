@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
 
 import clustering.cluster.*;
-import clustering.dataset.Dataset;
 import clustering.util.Storage;
 
 public class WithinClusterSS extends ValidationIndex {
@@ -26,10 +25,11 @@ public class WithinClusterSS extends ValidationIndex {
 				for(int i=0; i<C.size(); ++i) {
 					vTmp[i] = C.getRecord(i).get(j);
 				}
-				dRes += (new Variance()).evaluate(vTmp);
+				dRes += (new Variance()).evaluate(vTmp) * (C.size() - 1.0);
 			}
 		}
 		
+		/*
 		double dTotal = 0.0;
 		Dataset ds = pc.getDataset();
 		double[] vTmp = new double[ds.size()];
@@ -37,10 +37,13 @@ public class WithinClusterSS extends ValidationIndex {
 			for(int i=0; i<ds.size(); ++i) {
 				vTmp[i] = ds.get(i).get(j);
 			}
-			dTotal += (new Variance()).evaluate(vTmp);
+			dTotal += (new Variance()).evaluate(vTmp) * (ds.size() - 1.0);
 		}
 		
 		return dRes / dTotal;
+		*/
+		
+		return dRes;
 	}
 	
 	public double getIndex2(Storage res) throws Exception {
