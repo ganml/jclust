@@ -1,0 +1,6 @@
+EightCluster
+///: schema
+V1,recordid
+V2,continuous
+V3,continuous
+V4,class
