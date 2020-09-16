@@ -6,7 +6,7 @@ If you write research articles and want to cite this software, please use the fo
 @Book{gan2020,
   title     = {Data Clustering: Theory, Algorithms and Applications},
   publisher = {SIAM Press},
-  year      = {2020},
+  year      = {2021},
   author    = {Guojun Gan and Chaoqun Ma and Jianhong Wu},
   address   = {Philadelphia, PA},
   edition   = {2nd}
