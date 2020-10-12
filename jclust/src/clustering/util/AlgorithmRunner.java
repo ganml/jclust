@@ -43,7 +43,7 @@ public class AlgorithmRunner {
 		mResult = new HashMap<String, double[]>();
 		if (outputLevel >= 1) {
 			StringBuilder sb = new StringBuilder();
-			sb.append("RunIndex,Algorithm,DataSet,Run");
+			sb.append("RunIndex,Configuration,Algorithm,DataSet,Run");
 			for(int i=0; i<listVI.size(); ++i) {
 				sb.append(",").append(listVI.get(i).getName());
 			}
@@ -99,6 +99,7 @@ public class AlgorithmRunner {
 		    	String dataFile = mParam.get("DataFile");
 		    	String schemaFile = mParam.get("SchemaFile");
 		    	String normalize = mParam.get("Normalize");
+		    	String configName = mParam.get("Configuration");
 		    	
 		    	int numRun = Integer.parseInt(mParam.get("NumRun"));
 		    	
@@ -147,8 +148,8 @@ public class AlgorithmRunner {
 			        }			        
 			        
 			        if(outputLevel >= 1) {
-			        	sb1.append(String.format("Run%s,%s,%s,%d", 
-			        			runIndex, algName, dataFile, run));
+			        	sb1.append(String.format("Run%s,%s,%s,%s,%d", 
+			        			runIndex, configName,algName, dataFile, run));
 			        	for(int i=0; i<listVI.size(); ++i) {
 			        		sb1.append(String.format(",%.6f", mStat[i][run-1]));
 			        	}

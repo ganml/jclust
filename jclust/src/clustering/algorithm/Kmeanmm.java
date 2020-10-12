@@ -2,7 +2,9 @@ package clustering.algorithm;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import clustering.cluster.*;
 import clustering.dataset.Record;
@@ -24,6 +26,7 @@ public class Kmeanmm extends ClusteringAlgorithm {
 	protected int numiter;
 	protected InitializationMethod im;
 	protected int nChanges;
+	protected String sAssignOutlier;
 	
 	@Override
 	protected void work() throws Exception {
@@ -38,6 +41,7 @@ public class Kmeanmm extends ClusteringAlgorithm {
 		double p0 = arguments.getReal("pzero");
 		numOutlier = (int) Math.floor(p0 * nRecord);
 		outlierLabel = arguments.getStr("outlierLabel");
+		sAssignOutlier = arguments.getStr("assignoutlier").toLowerCase();
 		
 		String imName = arguments.getStr("im");
 		Class<?> clazz = Class.forName("clustering.initialization."+imName);	
@@ -47,8 +51,37 @@ public class Kmeanmm extends ClusteringAlgorithm {
 	
 	@Override
 	protected void fetchResults() throws Exception {		
-		PartitionClustering pc = new PartitionClustering(ds, lstcluster);
-	    
+		PartitionClustering pc;
+		if(sAssignOutlier.equals("no")) {
+			pc = new PartitionClustering(ds, lstcluster);
+		} else {
+			List<Cluster> lstcluster2 = new ArrayList<Cluster>();
+	    	Map<Integer, Integer> mapInd = new HashMap<Integer, Integer>();
+	    	for(int i=0; i<CM.length; ++i) {   
+	    		int ind = CM[i];
+	    		if(ind == numclust) {
+	    			double dMin = Double.MAX_VALUE;
+	    			for(int j=0; j<numclust; ++j) {
+	    				double dTmp = dist(ds.get(i), j);
+	    				if(dMin > dTmp) {
+	    					dMin = dTmp;
+	    					ind = j;
+	    				}
+	    			}
+	    		}
+	    		
+	    		if(mapInd.containsKey(ind)) {
+	    			lstcluster2.get(mapInd.get(ind)).add(ds.get(i));
+	    		} else {
+	    			mapInd.put(ind, mapInd.size());
+	    			Cluster c = new Cluster(String.format("C%d", mapInd.get(ind)+1));
+	    			c.add(ds.get(i));
+	    			lstcluster2.add(c);
+	    		}
+	    	}
+			pc = new PartitionClustering(ds, lstcluster2);
+		}
+			
 		List<String> lstLabelGiven = new ArrayList<String>();
 		List<Cluster> lstcluster3 = new ArrayList<Cluster>();
     	lstcluster3.add(new Cluster("Normal"));

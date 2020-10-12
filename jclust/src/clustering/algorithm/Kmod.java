@@ -1,28 +1,23 @@
 package clustering.algorithm;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import clustering.cluster.*;
 import clustering.dataset.Record;
 import clustering.initialization.InitializationMethod;
-import clustering.util.DoubleIntPair;
 
-public class Kmor extends ClusteringAlgorithm {
+public class Kmod extends ClusteringAlgorithm {
 	// parameters
 	protected int  numclust;
 	protected double gamma;
 	protected double delta;
 	protected int maxiter;
-	protected int n0;
 	protected String outlierLabel;
 	
 	// results	
 	protected List<Cluster> lstcluster;
-	protected int[] CM;
+	protected int[] CM; // k clusters + one group of outliers
+	protected int[] CMV; // k clusters
 	protected double[][] Z;
 	protected double dobj;
 	protected double dAvgDist;
@@ -43,8 +38,6 @@ public class Kmor extends ClusteringAlgorithm {
 		delta = arguments.getReal("delta");
 		numclust = arguments.getInt("numcluster");
 		maxiter = arguments.getInt("maxiter");
-		double p0 = arguments.getReal("pzero");
-		n0 = (int) Math.floor(p0 * nRecord);
 		outlierLabel = arguments.getStr("outlierLabel");
 		sAssignOutlier = arguments.getStr("assignoutlier").toLowerCase();
 		
@@ -63,24 +56,12 @@ public class Kmor extends ClusteringAlgorithm {
 		} else {
 			List<Cluster> lstcluster2 = new ArrayList<Cluster>();
 	    	Map<Integer, Integer> mapInd = new HashMap<Integer, Integer>();
-	    	for(int i=0; i<CM.length; ++i) {   
-	    		int ind = CM[i];
-	    		if(ind == numclust) {
-	    			double dMin = Double.MAX_VALUE;
-	    			for(int j=0; j<numclust; ++j) {
-	    				double dTmp = dist(ds.get(i), j);
-	    				if(dMin > dTmp) {
-	    					dMin = dTmp;
-	    					ind = j;
-	    				}
-	    			}
-	    		}
-	    		
-	    		if(mapInd.containsKey(ind)) {
-	    			lstcluster2.get(mapInd.get(ind)).add(ds.get(i));
+	    	for(int i=0; i<CMV.length; ++i) {    		
+	    		if(mapInd.containsKey(CMV[i])) {
+	    			lstcluster2.get(mapInd.get(CMV[i])).add(ds.get(i));
 	    		} else {
-	    			mapInd.put(ind, mapInd.size());
-	    			Cluster c = new Cluster(String.format("C%d", mapInd.get(ind)+1));
+	    			mapInd.put(CMV[i], mapInd.size());
+	    			Cluster c = new Cluster(String.format("C%d", mapInd.get(CMV[i])+1));
 	    			c.add(ds.get(i));
 	    			lstcluster2.add(c);
 	    		}
@@ -111,11 +92,14 @@ public class Kmor extends ClusteringAlgorithm {
         results.insert("pc3", pc3);
         results.insert("numiter", new Integer(numiter));
         results.insert("dobj", new Double(dobj));     
-    
+        results.insert("Z", Z);   
+        results.insert("CM", CM);   
+        results.insert("CMV", CMV);
 	}
 
 	protected void initialization() throws Exception {     	
         CM = new int[nRecord];
+        CMV = new int[nRecord];
         Z = new double[numclust][nDimension];
         
         im.run();        
@@ -144,6 +128,7 @@ public class Kmor extends ClusteringAlgorithm {
             }
             lstcluster.get(s).add(ds.get(i)); 
             CM[i] = s;
+            CMV[i] = s;
         } 
          
 	}
@@ -155,6 +140,7 @@ public class Kmor extends ClusteringAlgorithm {
         numiter = 1;
         while(true) {
         	
+        	updateV();
         	updateU();
         	updateZ();
             
@@ -173,73 +159,78 @@ public class Kmor extends ClusteringAlgorithm {
 
 	}
 	
-	protected void updateU() {
+	protected void updateV() {
+		double dSum = 0.0;
+        int s = -1;
         double dMin,dDist;
-        nChanges = 0;
-        List<DoubleIntPair> listPair = new ArrayList<DoubleIntPair>();
-        int[] vD = new int[nRecord];
-        for(int i=0;i<nRecord;++i) {
+        for(int i=0;i<nRecord;++i){
             dMin = Double.MAX_VALUE;
-            int s = -1;
-            for(int k=0;k<numclust;++k) { 
-                dDist = dist(ds.get(i),k);
-                if (dMin > dDist) {
+            s = -1;
+            for(int j=0;j<numclust;++j){ 
+                dDist = dist(ds.get(i), j);
+                if (dDist<dMin){
+                    s = j;
                     dMin = dDist;
-                    s = k;
-                }                
+                }
             }
-            vD[i] = s;
-            listPair.add(new DoubleIntPair(dMin, i)); 
-        }
-        Collections.sort(listPair);
+                      	
+        	CMV[i] = s;
+        	dSum  += (dMin - dSum) / (i+1.0);
+        } 
         
-        /*
-        if(numiter == 1) {
-        	for(int i=0; i<nRecord; ++i) {
-        		log.info(String.format("dist, %f",listPair.get(i).getValue()));
-        	}
-		}*/
-        
-        int nOutliers = 0;
-        for(int i=0; i<n0; ++i) {            	
-        	if(listPair.get(i).getValue() <= dAvgDist) {             		
-        		break;
-        	}
-        	nOutliers = i+1;
-        }
-        for(int j=0; j<nOutliers; ++j) {
-        	int i = listPair.get(j).getIndex();
-        	if (CM[i] != numclust){
-                lstcluster.get(CM[i]).remove(ds.get(i));
-                lstcluster.get(numclust).add(ds.get(i));
-                CM[i] = numclust;
-                ++nChanges;
-            }
-        }
-        for(int j=nOutliers;j<nRecord;++j) {
-        	int i = listPair.get(j).getIndex();
-        	int s = vD[i];
-            if (CM[i] != s){
-                lstcluster.get(CM[i]).remove(ds.get(i));
-                lstcluster.get(s).add(ds.get(i));
-                CM[i] = s;
-                ++nChanges;
-            }
-        }
-        
+        dAvgDist = dSum * gamma;
+	}
 	
+	protected void updateU() {
+        int s = -1;
+        double dMin,dDist;
+        for(int i=0;i<nRecord;++i){
+            dMin = Double.MAX_VALUE;
+            s = -1;
+            for(int j=0;j<numclust;++j){ 
+                dDist = dist(ds.get(i), j);
+                if (dDist<dMin){
+                    s = j;
+                    dMin = dDist;
+                }
+            }
+            if(dMin > dAvgDist) {
+            	s = numclust;
+            }
+        	if(CM[i] != s) {
+        		lstcluster.get(CM[i]).remove(ds.get(i));
+        		lstcluster.get(s).add(ds.get(i));
+        		CM[i] = s;
+        	}        	
+        } 		
 	}
 	
 	protected void updateZ() {
-		double dTemp;  
+		double r0 = gamma * lstcluster.get(numclust).size() / nRecord;
+		double[] vSum = new double[numclust];
+		Arrays.fill(vSum, 0.0);
+		double[][] mSum = new double[numclust][nDimension];
+		for(int i=0; i<numclust; ++i) {
+			Arrays.fill(mSum[i], 0.0);
+		}
+		
+		for(int i=0; i<nRecord; ++i) {
+			if(CM[i] < numclust) {
+				for(int j=0; j<nDimension; ++j) {
+					mSum[CMV[i]][j] += (1+r0) * ds.get(i).get(j);
+				}
+				vSum[CMV[i]] += 1+r0;
+			} else {
+				for(int j=0; j<nDimension; ++j) {
+					mSum[CMV[i]][j] += r0 * ds.get(i).get(j);
+				}
+				vSum[CMV[i]] += r0;
+			}
+		}
+		
         for(int k=0;k<numclust;++k){ 
-            for(int j=0;j<nDimension;++j){
-                dTemp = 0.0;
-                for(int i=0; i<lstcluster.get(k).size();++i){
-                    Record rec = lstcluster.get(k).getRecord(i);
-                    dTemp += rec.get(j);
-                }               
-                Z[k][j] = dTemp / lstcluster.get(k).size();
+            for(int j=0;j<nDimension;++j){                             
+                Z[k][j] = mSum[k][j] / vSum[k];
             }
         }
 	}
@@ -254,15 +245,17 @@ public class Kmor extends ClusteringAlgorithm {
 	}
 	
 	protected void calculateObj() {
-		double dSum1 = 0.0;
+		double r0 = gamma * lstcluster.get(numclust).size() / nRecord;
+		double dSum = 0.0;
 		for(int i=0; i<nRecord; ++i) {
-			int j = CM[i];
-			if(j < numclust) {
-				dSum1 += dist(ds.get(i), j);
+			int j = CMV[i];
+			if(CM[i] < numclust) {
+				dSum += (1+r0) * dist(ds.get(i), j);
+			} else {
+				dSum += r0 * dist(ds.get(i), j);
 			}
 		}		
-		dAvgDist = dSum1 * gamma / (nRecord - lstcluster.get(numclust).size());
 				
-		dobj = dSum1 + dAvgDist * lstcluster.get(numclust).size();
+		dobj = dSum;
 	}
 }

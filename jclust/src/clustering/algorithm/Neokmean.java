@@ -24,6 +24,7 @@ public class Neokmean extends ClusteringAlgorithm {
 	protected double dobj;
 	protected InitializationMethod im;
 	protected int nChanges;
+	protected String sAssignOutlier;
 	
 	@Override
 	protected void work() throws Exception {
@@ -38,6 +39,7 @@ public class Neokmean extends ClusteringAlgorithm {
 		numclust = arguments.getInt("numcluster");
 		maxiter = arguments.getInt("maxiter");
 		outlierLabel = arguments.getStr("outlierLabel");
+		sAssignOutlier = arguments.getStr("assignoutlier").toLowerCase();
 		
 		String imName = arguments.getStr("im");
 		Class<?> clazz = Class.forName("clustering.initialization."+imName);	
@@ -47,16 +49,49 @@ public class Neokmean extends ClusteringAlgorithm {
 	
 	@Override
 	protected void fetchResults() throws Exception {		
-		List<Cluster> lstcluster1 = new ArrayList<Cluster>();       
-		for(int i=0;i<numclust;++i){   
-			Cluster c = new Cluster(String.format("C%d", i+1));   
-            lstcluster1.add(c);            
-        }
-		lstcluster1.add(new Cluster("Outlier"));
-		for(int i=0; i<CM.length; ++i) {
-			lstcluster1.get(CM[i]).add(ds.get(i));
+		
+		PartitionClustering pc;
+		
+		if(sAssignOutlier.equals("no")) {
+			List<Cluster> lstcluster1 = new ArrayList<Cluster>();       
+			for(int i=0;i<numclust;++i){   
+				Cluster c = new Cluster(String.format("C%d", i+1));   
+	            lstcluster1.add(c);            
+	        }
+			lstcluster1.add(new Cluster("Outlier"));
+			for(int i=0; i<CM.length; ++i) {
+				lstcluster1.get(CM[i]).add(ds.get(i));
+			}
+			pc = new PartitionClustering(ds, lstcluster1);
+		} else {
+			List<Cluster> lstcluster2 = new ArrayList<Cluster>();
+	    	Map<Integer, Integer> mapInd = new HashMap<Integer, Integer>();
+	    	for(int i=0; i<CM.length; ++i) {   
+	    		int ind = CM[i];
+	    		if(ind == numclust) {
+	    			double dMin = Double.MAX_VALUE;
+	    			for(int j=0; j<numclust; ++j) {
+	    				double dTmp = dist(ds.get(i), j);
+	    				if(dMin > dTmp) {
+	    					dMin = dTmp;
+	    					ind = j;
+	    				}
+	    			}
+	    		}
+	    		
+	    		if(mapInd.containsKey(ind)) {
+	    			lstcluster2.get(mapInd.get(ind)).add(ds.get(i));
+	    		} else {
+	    			mapInd.put(ind, mapInd.size());
+	    			Cluster c = new Cluster(String.format("C%d", mapInd.get(ind)+1));
+	    			c.add(ds.get(i));
+	    			lstcluster2.add(c);
+	    		}
+	    	}
+			pc = new PartitionClustering(ds, lstcluster2);
+			
 		}
-		PartitionClustering pc = new PartitionClustering(ds, lstcluster1);
+		
 
 		List<String> lstLabelGiven = new ArrayList<String>();
 		List<Cluster> lstcluster3 = new ArrayList<Cluster>();

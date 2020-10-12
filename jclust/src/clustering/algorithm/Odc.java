@@ -24,7 +24,7 @@ public class Odc extends ClusteringAlgorithm {
 	protected int numiter;
 	protected InitializationMethod im;
 	protected int nChanges;
-	
+	protected String sAssignOutlier;
 
 	@Override
 	protected void work() throws Exception {
@@ -39,6 +39,7 @@ public class Odc extends ClusteringAlgorithm {
 		numclust = arguments.getInt("numcluster");
 		maxiter = arguments.getInt("maxiter");
 		outlierLabel = (String) arguments.get("outlierLabel");
+		sAssignOutlier = arguments.getStr("assignoutlier").toLowerCase();
 		
 		String imName = arguments.getStr("im");
 		Class<?> clazz = Class.forName("clustering.initialization."+imName);	
@@ -48,21 +49,25 @@ public class Odc extends ClusteringAlgorithm {
 	
 	@Override
 	protected void fetchResults() throws Exception {
-		PartitionClustering pc = new PartitionClustering(ds, lstcluster);		
-        
-		List<Cluster> lstcluster2 = new ArrayList<Cluster>();
-    	Map<Integer, Integer> mapInd = new HashMap<Integer, Integer>();
-    	for(int i=0; i<CMV.length; ++i) {    		
-    		if(mapInd.containsKey(CMV[i])) {
-    			lstcluster2.get(mapInd.get(CMV[i])).add(ds.get(i));
-    		} else {
-    			mapInd.put(CMV[i], mapInd.size());
-    			Cluster c = new Cluster(String.format("C%d", mapInd.get(CMV[i])+1));
-    			c.add(ds.get(i));
-    			lstcluster2.add(c);
-    		}
-    	}
-		PartitionClustering pc2 = new PartitionClustering(ds, lstcluster2);
+		PartitionClustering pc ;
+		
+		if(sAssignOutlier.equals("no")) {
+			pc = new PartitionClustering(ds, lstcluster);		
+		} else {
+			List<Cluster> lstcluster2 = new ArrayList<Cluster>();
+	    	Map<Integer, Integer> mapInd = new HashMap<Integer, Integer>();
+	    	for(int i=0; i<CMV.length; ++i) {    		
+	    		if(mapInd.containsKey(CMV[i])) {
+	    			lstcluster2.get(mapInd.get(CMV[i])).add(ds.get(i));
+	    		} else {
+	    			mapInd.put(CMV[i], mapInd.size());
+	    			Cluster c = new Cluster(String.format("C%d", mapInd.get(CMV[i])+1));
+	    			c.add(ds.get(i));
+	    			lstcluster2.add(c);
+	    		}
+	    	}
+			pc = new PartitionClustering(ds, lstcluster2);
+		}
 		
 		List<String> lstLabelGiven = new ArrayList<String>();
 		List<Cluster> lstcluster3 = new ArrayList<Cluster>();
@@ -83,7 +88,6 @@ public class Odc extends ClusteringAlgorithm {
 		PartitionClustering pc3 = new PartitionClustering(ds, lstLabelGiven, lstcluster3);
 		
         results.insert("pc", pc);
-        results.insert("pc2", pc2);
         results.insert("pc3", pc3);    
         results.insert("numiter", new Integer(numiter));
         results.insert("dobj", new Double(dobj));      
